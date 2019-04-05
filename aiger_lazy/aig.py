@@ -43,15 +43,14 @@ class LazyAIG:
     def __repr__(self):
         return repr(self.flatten())
 
-    @property
-    def aig(self):
-        return self
+    def __call__(self, inputs, latches=None):
+        raise NotImplementedError
 
     def __getattr__(self, attr):
-        # TODO:
         return partial(getattr(aiger.AIG, attr), self=self)
 
     def __rshift__(self, other):
+        # TODO: implement unit propogation.
         interface = self.outputs & other.inputs
         assert not (self.outputs - interface) & other.outputs
         assert not self.latches & other.latches
@@ -71,6 +70,10 @@ class LazyAIG:
             outputs=self.outputs | other.outputs,
             latches=self.latches | other.latches
         )
+
+    @property
+    def aig(self):
+        return self
 
     def flatten(self):
         # TODO: implement non-naive flattening
